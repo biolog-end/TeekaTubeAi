@@ -1,0 +1,2046 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Обработка: {{ title }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #ff0000;
+            --primary-hover: #cc0000;
+            --secondary-color: #333;
+            --bg-color: #f8f8f8;
+            --card-bg: #ffffff;
+            --success: #28a745;
+            --info: #17a2b8;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', 'Segoe UI', sans-serif;
+            background-color: var(--bg-color);
+            color: #444;
+            line-height: 1.6;
+            padding: 25px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        h2 {
+            color: var(--secondary-color);
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .queue-info {
+            color: #666;
+            font-size: 14px;
+            background-color: rgba(0,0,0,0.05);
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+        
+        .flash-messages {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 25px;
+        }
+        
+        .flash-messages li {
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: var(--border-radius);
+            position: relative;
+            padding-left: 45px;
+        }
+        
+        .flash-messages li::before {
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        .flash-success {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: #155724;
+            border-left: 4px solid var(--success);
+        }
+        
+        .flash-success::before {
+            content: '\f00c';
+            color: var(--success);
+        }
+        
+        .flash-error {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: #721c24;
+            border-left: 4px solid var(--danger);
+        }
+        
+        .flash-error::before {
+            content: '\f00d';
+            color: var(--danger);
+        }
+        
+        .flash-warning {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: #856404;
+            border-left: 4px solid var(--warning);
+        }
+        
+        .flash-warning::before {
+            content: '\f071';
+            color: var(--warning);
+        }
+        
+        .flash-info {
+            background-color: rgba(23, 162, 184, 0.1);
+            color: #0c5460;
+            border-left: 4px solid var(--info);
+        }
+        
+        .flash-info::before {
+            content: '\f05a';
+            color: var(--info);
+        }
+        
+        .video-card {
+            display: flex;
+            margin-bottom: 25px;
+            background-color: #f9f9f9;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
+        
+        .video-thumbnail {
+            width: 200px;
+            background-color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 40px;
+            position: relative;
+        }
+        
+        .play-icon {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background-color: rgba(255,0,0,0.8);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .video-info {
+            flex: 1;
+            padding: 15px 20px;
+        }
+        
+        .video-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .detail-item {
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: var(--border-radius);
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--secondary-color);
+            display: flex;
+            align-items: center;
+        }
+        
+        .detail-label i {
+            margin-right: 8px;
+            color: var(--primary-color);
+        }
+        
+        .detail-value {
+            word-break: break-all;
+        }
+        
+        .detail-value a {
+            color: var(--info);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            margin-left: 10px;
+        }
+        
+        .detail-value a i {
+            margin-right: 5px;
+        }
+        
+        .detail-value a:hover {
+            text-decoration: underline;
+        }
+        
+        #description-box {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            background-color: #f8f8f8;
+            padding: 15px;
+            border: 1px solid #eee;
+            border-radius: var(--border-radius);
+            max-height: 250px;
+            overflow-y: auto;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-top: 10px;
+            font-family: inherit;
+        }
+        
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--secondary-color);
+            display: flex;
+            align-items: center;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .section-title i {
+            margin-right: 10px;
+            color: var(--primary-color);
+        }
+        
+        .comments-section {
+            margin-top: 30px;
+        }
+        
+        .comments-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .comment-item {
+            background-color: #f9f9f9;
+            border-radius: var(--border-radius);
+            padding: 15px;
+            transition: var(--transition);
+            border: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .comment-item:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transform: translateY(-3px);
+        }
+        
+        .comment-author {
+            font-weight: 600;
+            color: var(--secondary-color);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .comment-author i {
+            margin-right: 8px;
+            color: var(--primary-color);
+        }
+        
+        .comment-content {
+            border-left: 3px solid #ddd;
+            padding-left: 12px;
+            font-style: italic;
+            color: #555;
+            margin-top: 8px;
+            margin-bottom: 0;
+            max-height: 150px;
+            overflow-y: auto;
+            background-color: rgba(255,255,255,0.7);
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 14px;
+            flex-grow: 1;
+        }
+        
+        .comment-form {
+            margin-top: 30px;
+        }
+        
+        .textarea-container {
+            position: relative;
+            margin-bottom: 25px;
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-family: inherit;
+            font-size: 15px;
+            min-height: 120px;
+            resize: vertical;
+            transition: var(--transition);
+        }
+        
+        textarea:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(255,0,0,0.1);
+        }
+        
+        .actions-container {
+            margin-top: 20px;
+        }
+        
+        .related-index-input {
+            margin-bottom: 20px;
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .related-index-input label {
+            margin-right: 15px;
+            font-weight: 500;
+            color: var(--secondary-color);
+            display: flex;
+            align-items: center;
+        }
+        
+        .related-index-input label i {
+            margin-right: 8px;
+            color: var(--primary-color);
+        }
+        
+        .related-index-input input[type=number] {
+            width: 70px;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 15px;
+        }
+        
+        .related-index-input input[type=number]:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+        
+        .related-index-input small {
+            margin-left: 15px;
+            color: #777;
+        }
+        
+        .button-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .button-group button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 20px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+            color: white;
+        }
+        
+        .button-group button i {
+            margin-right: 8px;
+        }
+        
+        .button-group button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .btn-post-related {
+            background-color: var(--success);
+        }
+        
+        .btn-post-related:hover {
+            background-color: #218838;
+        }
+        
+        .btn-skip-related {
+            background-color: var(--info);
+        }
+        
+        .btn-skip-related:hover {
+            background-color: #138496;
+        }
+        
+        .btn-post-list {
+            background-color: #007bff;
+        }
+        
+        .btn-post-list:hover {
+            background-color: #0056b3;
+        }
+        
+        .btn-skip-list {
+            background-color: var(--warning);
+            color: #333 !important;
+        }
+        
+        .btn-skip-list:hover {
+            background-color: #e0a800;
+        }
+        
+        .no-comments {
+            text-align: center;
+            padding: 30px;
+            background-color: #f5f5f5;
+            border-radius: var(--border-radius);
+            color: #777;
+            font-style: italic;
+        }
+        .comment-actions {
+            margin-top: 10px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .btn-reply {
+            background-color: rgba(0, 123, 255, 0.1);
+            color: #007bff;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: var(--transition);
+        }
+
+        .btn-reply i {
+            margin-right: 5px;
+        }
+
+        .btn-reply:hover {
+            background-color: rgba(0, 123, 255, 0.2);
+        }
+
+        .reply-status {
+            background-color: #f0f8ff;
+            padding: 10px 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            color: #007bff;
+            border-left: 3px solid #007bff;
+        }
+
+        .btn-cancel-reply {
+            background: none;
+            border: none;
+            color: #dc3545;
+            margin-left: auto;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+        }
+
+        .btn-cancel-reply:hover {
+            background-color: rgba(220, 53, 69, 0.1);
+        }
+        .description-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px; 
+        }
+
+        .btn-summarize {
+            background-color: rgba(78, 52, 255, 0.1); 
+            color: #4e34ff;
+            border: 1px solid rgba(78, 52, 255, 0.3);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s ease;
+            margin-left: 15px; 
+            display: inline-flex; 
+            align-items: center; 
+        }
+        .btn-summarize i {
+            margin-right: 6px;
+        }
+
+        .btn-summarize:hover {
+            background-color: rgba(78, 52, 255, 0.2);
+            border-color: rgba(78, 52, 255, 0.5);
+            box-shadow: 0 2px 8px rgba(78, 52, 255, 0.15);
+        }
+        .btn-summarize:disabled {
+             background-color: #eee;
+             color: #999;
+             cursor: not-allowed;
+             border-color: #ddd;
+        }
+        .btn-summarize .spinner { 
+            border: 2px solid rgba(78, 52, 255, 0.3);
+            border-top: 2px solid #4e34ff;
+            border-radius: 50%;
+            width: 14px;
+            height: 14px;
+            animation: spin 1s linear infinite;
+            margin-right: 6px; 
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #summary-container {
+            margin-top: 15px;
+            padding: 15px;
+            background: linear-gradient(135deg, rgba(230, 245, 255, 0.7), rgba(240, 235, 255, 0.7)); 
+            border: 1px solid rgba(0, 123, 255, 0.3);
+            border-radius: var(--border-radius);
+            position: relative;
+            backdrop-filter: blur(2px); 
+            box-shadow: 0 0 20px rgba(0, 123, 255, 0.1); 
+        }
+        #summary-container h4 {
+            margin: 0 0 10px 0;
+            color: #0056b3; 
+            font-size: 16px;
+            font-weight: 600;
+        }
+        #summary-box {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            background-color: rgba(255, 255, 255, 0.7); 
+            padding: 10px;
+            border: 1px solid rgba(0, 123, 255, 0.2);
+            border-radius: 5px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 14px;
+            line-height: 1.5;
+            font-family: inherit;
+            color: #333;
+        }
+        .btn-close-summary {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: #dc3545;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 5px;
+            line-height: 1;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-close-summary:hover {
+            background-color: rgba(220, 53, 69, 0.1);
+        }
+        .summary-error {
+            color: #721c24; 
+            background-color: rgba(220, 53, 69, 0.1); 
+            border: 1px solid rgba(220, 53, 69, 0.2);
+        }
+        .comment-form-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        .comment-form-header .section-title {
+             margin-bottom: 0;
+             padding-bottom: 0;
+             border-bottom: none;
+        }
+
+        #generate-error-message {
+            display: none; 
+            margin-top: 10px;
+            padding: 10px 15px;
+            border-radius: var(--border-radius);
+            background-color: rgba(220, 53, 69, 0.1);
+            color: #721c24;
+            border-left: 4px solid var(--danger);
+            font-size: 14px;
+         }
+         #ai-comment-container {
+            margin-top: 25px;
+            margin-bottom: 25px;
+            padding: 20px;
+            background: linear-gradient(145deg, rgba(15, 32, 72, 0.85), rgba(45, 75, 145, 0.9));
+            border: 1px solid rgba(100, 150, 255, 0.5);
+            border-radius: var(--border-radius);
+            position: relative;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 5px 25px rgba(0, 50, 150, 0.3);
+            color: #e0eaff;
+        }
+        #ai-comment-container h4 {
+            margin: 0 0 15px 0;
+            color: #a8c7ff;
+            font-size: 17px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid rgba(100, 150, 255, 0.3);
+            padding-bottom: 10px;
+        }
+        #ai-comment-container h4 i {
+            margin-right: 10px;
+            color: #79a6ff;
+        }
+        #ai-comment-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid rgba(100, 150, 255, 0.4);
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 15px;
+            min-height: 100px;
+            resize: vertical;
+            background-color: rgba(20, 40, 80, 0.7);
+            color: #d0e0ff;
+            margin-bottom: 15px;
+            transition: var(--transition);
+        }
+        #ai-comment-textarea:focus {
+            border-color: #a8c7ff;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(100, 150, 255, 0.2);
+            background-color: rgba(30, 50, 90, 0.8);
+        }
+        .ai-comment-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        .btn-post-ai, .btn-close-ai {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+        }
+        .btn-post-ai {
+            background-color: rgba(40, 167, 69, 0.7); 
+            color: white;
+        }
+        .btn-post-ai:hover {
+            background-color: rgba(33, 136, 56, 0.9);
+             box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+        }
+        .btn-close-ai {
+             background: none;
+             color: #ffcdd2;
+             font-size: 18px;
+             position: absolute;
+             top: 10px;
+             right: 10px;
+             padding: 5px;
+             line-height: 1;
+             width: 30px;
+             height: 30px;
+             justify-content: center;
+        }
+        .btn-close-ai:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #ff8a80;
+        }
+        .btn-post-ai i {
+            margin-right: 6px;
+        }
+        #ai-post-status {
+            font-size: 13px;
+            margin-top: 10px;
+            padding: 8px 12px;
+            border-radius: 4px;
+            display: none; 
+        }
+        #ai-post-status.success {
+             background-color: rgba(40, 167, 69, 0.2);
+             color: #d4edda;
+             border-left: 3px solid var(--success);
+        }
+         #ai-post-status.error {
+             background-color: rgba(220, 53, 69, 0.2);
+             color: #f8d7da;
+             border-left: 3px solid var(--danger);
+        }
+        .ai-model-selector {
+        padding: 7px 12px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        background-color: #fff;
+        font-size: 13px;
+        margin-right: 10px; 
+        vertical-align: middle; 
+        cursor: pointer;
+        transition: border-color 0.2s ease;
+        min-width: 120px; 
+        height: 35px; 
+        line-height: normal; 
+    }
+    .ai-model-selector:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 2px rgba(255, 0, 0, 0.1);
+    }
+
+    
+    .btn-generate-ai {
+        padding: 6px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 13px;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        vertical-align: middle;
+        border: 1px solid transparent; 
+        height: 35px;
+    }
+    .btn-generate-ai i { 
+        margin-right: 6px;
+    }
+    .btn-generate-ai .spinner { 
+        border: 2px solid rgba(255, 255, 255, 0.3); 
+        border-radius: 50%;
+        width: 14px;
+        height: 14px;
+        animation: spin 1s linear infinite;
+        margin-right: 6px;
+    }
+    .btn-generate-ai:disabled { 
+         background-color: #eee !important; 
+         color: #999 !important;
+         cursor: not-allowed !important;
+         border-color: #ddd !important;
+    }
+    .btn-generate-ai:disabled i { 
+        display: none;
+    }
+    .btn-generate-ai:disabled .spinner { 
+        display: inline-block; 
+        border: 2px solid rgba(153, 153, 153, 0.3);
+        border-top: 2px solid #999;
+    }
+
+    
+    .btn-generate-ai-v1 {
+        background-color: rgba(23, 162, 184, 0.1);
+        color: var(--info);
+        border-color: rgba(23, 162, 184, 0.3);
+    }
+    .btn-generate-ai-v1:not(:disabled):hover {
+        background-color: rgba(23, 162, 184, 0.2);
+        border-color: rgba(23, 162, 184, 0.5);
+        box-shadow: 0 2px 8px rgba(23, 162, 184, 0.15);
+    }
+    .btn-generate-ai-v1 .spinner {
+        border-top: 2px solid var(--info); 
+    }
+
+    
+    .btn-generate-ai-v2 {
+        background-color: rgba(108, 52, 131, 0.1);
+        color: #ab8fd8;
+        border-color: rgba(108, 52, 131, 0.3);
+    }
+    .btn-generate-ai-v2:not(:disabled):hover {
+        background-color: rgba(108, 52, 131, 0.2);
+        border-color: rgba(108, 52, 131, 0.5);
+        box-shadow: 0 2px 8px rgba(108, 52, 131, 0.15);
+    }
+    .btn-generate-ai-v2 .spinner {
+        border-top: 2px solid #ab8fd8; 
+    }
+
+    .btn-generate-ai-v3 {
+        background-color: rgba(52, 131, 64, 0.1);
+        color: #a4d88f;
+        border-color: rgba(52, 131, 61, 0.3);
+    }
+    .btn-generate-ai-v3:not(:disabled):hover {
+        background-color: rgba(65, 131, 52, 0.2);
+        border-color: rgba(60, 131, 52, 0.5);
+        box-shadow: 0 2px 8px rgba(52, 131, 80, 0.15);
+    }
+    .btn-generate-ai-v3 .spinner {
+        border-top: 2px solid #89f7a5; 
+    }
+    .ai-model-selector-container {
+        position: relative;
+        display: inline-block;
+        vertical-align: middle;
+    }
+
+    .ai-model-selector {
+        appearance: none;
+        -webkit-appearance: none;
+        padding: 8px 35px 8px 15px;
+        border-radius: 8px;
+        border: 1px solid rgba(0, 0, 0, 0.15);
+        background-color: white;
+        font-size: 14px;
+        font-weight: 500;
+        min-width: 150px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        background-size: 16px;
+    }
+
+    .ai-model-selector:hover {
+        border-color: rgba(0, 0, 0, 0.25);
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .ai-model-selector:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(255, 0, 0, 0.1);
+    }
+
+    .section-actions{
+        display: flex; 
+        align-items: center;
+    }
+
+    /* Адаптивный дизайн */
+    @media (max-width: 768px) {
+        body {
+            padding: 15px 10px;
+        }
+        
+        .container {
+            padding: 20px 15px;
+        }
+        
+        .video-card {
+            flex-direction: column;
+        }
+        
+        .video-thumbnail {
+            width: 100%;
+            height: 200px;
+        }
+        
+        .video-details {
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        
+        .button-group {
+            grid-template-columns: 1fr;
+        }
+        
+        .comments-container {
+            grid-template-columns: 1fr;
+        }
+        
+        .comment-form-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .comment-form-header > div {
+            margin-top: 15px;
+            width: 100%;
+        }
+        
+        .ai-model-selector-container {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        
+        .ai-model-selector {
+            width: 100%;
+        }
+        
+        #generate-ai-comment-btn {
+            width: 100%;
+        }
+        
+        .related-index-input {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .related-index-input small {
+            margin-left: 0;
+            margin-top: 5px;
+        }
+        
+        .description-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .btn-summarize {
+            margin-left: 0;
+            margin-top: 10px;
+        }
+        
+        .header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .queue-info {
+            margin-top: 10px;
+        }
+
+        .section-actions{
+            flex-direction: column;
+        }
+    }
+
+    .video-card {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .video-thumbnail {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .video-thumbnail::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.6));
+        z-index: 1;
+    }
+
+    .play-icon {
+        z-index: 2;
+        transition: transform 0.3s ease;
+    }
+
+    .video-card:hover .play-icon {
+        transform: scale(1.1);
+    }
+
+    .btn-generate-ai {
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        font-weight: 500;
+    }
+
+    .btn-generate-ai:not(:disabled):hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    #ai-comment-container {
+        animation: fade-in 0.3s ease;
+    }
+
+    @keyframes fade-in {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .btn-post-ai, .btn-close-ai {
+        transition: all 0.2s ease;
+    }
+
+    .btn-post-ai:hover {
+        transform: translateY(-2px);
+    }
+
+    .comment-item {
+        transition: all 0.2s ease;
+    }
+
+    .comment-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    }
+    .prompt-container {
+            margin-bottom: 25px; 
+            background-color: rgba(245, 245, 255, 0.6); 
+            padding: 15px;
+            border-radius: var(--border-radius);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .prompt-label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: var(--secondary-color);
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .prompt-label i {
+            margin-right: 8px;
+            color: #6a5acd;
+        }
+
+        .prompt-textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ccd; 
+            border-radius: var(--border-radius);
+            font-family: inherit;
+            font-size: 14px;
+            min-height: 80px;
+            resize: vertical;
+            transition: var(--transition);
+            background-color: #fff;
+        }
+
+        .prompt-textarea:focus {
+            border-color: #8a7ff0; 
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(106, 90, 205, 0.15); 
+        }
+         
+        @media (max-width: 768px) {
+            .prompt-container {
+                 padding: 12px;
+            }
+        }
+        .history-switch-container {
+            display: flex;
+            align-items: center;
+            margin-right: 15px; 
+            vertical-align: middle; 
+        }
+
+        .history-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px; 
+            margin-right: 8px;
+        }
+
+        .history-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px; 
+            width: 18px;
+            left: 3px; 
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary-color); 
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--primary-color);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px); 
+        }
+
+        /* Rounded sliders */
+        .slider.round {
+            border-radius: 24px;
+        }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
+
+        .history-switch-label {
+            font-size: 13px;
+            color: var(--secondary-color);
+            cursor: pointer;
+            user-select: none;
+        }
+
+
+        @media (max-width: 768px) {
+            .history-switch-container {
+                width: 100%; 
+                justify-content: flex-start;
+                margin-right: 0;
+                margin-bottom: 10px; 
+            }
+            .section-actions{
+                align-items: stretch; 
+            }
+        }
+        .typo-generator-section {
+            margin-top: 40px;
+            padding: 25px;
+            background-color: #fdfdfd;
+            border-radius: var(--border-radius);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.07);
+            border: 1px solid #eee;
+        }
+
+        .typo-generator-section h3 {
+            margin-bottom: 20px;
+            color: var(--secondary-color);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .typo-generator-section h3 i {
+            margin-right: 10px;
+            color: #6a5acd; 
+        }
+
+        .typo-inputs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+            margin-bottom: 20px;
+        }
+
+        .typo-input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .typo-input-group input[type=number] {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .typo-input-group input[type=number]:focus {
+            border-color: #8a7ff0;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(106, 90, 205, 0.1);
+        }
+
+
+        .btn-apply-typos {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--border-radius);
+            background-color: #6a5acd; 
+            color: white;
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+            margin-top: 10px;
+        }
+
+        .btn-apply-typos i {
+            margin-right: 8px;
+        }
+
+        .btn-apply-typos:hover {
+            background-color: #5a4ab4;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(106, 90, 205, 0.2);
+        }
+        .btn-apply-typos:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        #typo-output-container {
+            margin-top: 20px;
+            position: relative;
+        }
+
+        #typo-output-container label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--secondary-color);
+        }
+
+        #typo-output-text {
+            width: 100%;
+            min-height: 100px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-family: inherit; 
+            font-size: 15px;
+            background-color: #f8f8f8;
+            
+            white-space: pre-wrap; 
+            word-wrap: break-word; 
+            line-height: 1.6;
+            overflow-y: auto; 
+            max-height: 300px;
+        }
+        .diff-char {
+            color: #dc3545; 
+            background-color: rgba(220, 53, 69, 0.1);
+            font-weight: bold; 
+            padding: 0 1px; 
+            border-radius: 2px;
+        }
+        .btn-copy-typo {
+            position: absolute;
+            top: 10px; 
+            right: 10px;
+            background-color: rgba(0, 123, 255, 0.1);
+            color: #007bff;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            z-index: 10; 
+        }
+        .btn-copy-typo:hover {
+            background-color: rgba(0, 123, 255, 0.2);
+        }
+        .btn-copy-typo i {
+            margin-right: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .typo-generator-section {
+                padding: 15px;
+            }
+            .typo-inputs-grid {
+                grid-template-columns: 1fr; 
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="flash-messages">
+                {% for category, message in messages %}
+                    <li class="flash-{{ category }}">{{ message }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+        <div class="header">
+            <h2><i class="fab fa-youtube"></i> {{ title }}</h2>
+            <div class="queue-info">
+                <i class="fas fa-layer-group"></i> Осталось в очереди: <strong>{{ queue_count }}</strong>
+            </div>
+        </div>
+
+        <div class="video-card">
+            <div class="video-thumbnail">
+                <div class="play-icon">
+                    <i class="fas fa-play"></i>
+                </div>
+            </div>
+            <div class="video-info">
+                <h3>{{ title }}</h3>
+                <p><i class="fas fa-user"></i> {{ channel }}</p>
+                <a href="https://www.youtube.com/watch?v={{ video_id }}" target="_blank" class="video-link">
+                    <i class="fas fa-external-link-alt"></i> Открыть на YouTube
+                </a>
+            </div>
+        </div>
+
+        <div class="video-details">
+            <div class="detail-item">
+                <div class="detail-label">
+                    <i class="fas fa-user"></i> Канал
+                </div>
+                <div class="detail-value">{{ channel }}</div>
+            </div>
+            
+            <div class="detail-item">
+                <div class="detail-label">
+                    <i class="fas fa-fingerprint"></i> Video ID
+                </div>
+                <div class="detail-value">
+                    {{ video_id }}
+                    <a href="https://www.youtube.com/watch?v={{ video_id }}" target="_blank">
+                        <i class="fas fa-external-link-alt"></i> Открыть
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="detail-item">
+            <div class="description-header">
+                <div class="detail-label">
+                    <i class="fas fa-align-left"></i> Описание видео
+                </div>
+                <button type="button" id="summarize-btn" class="btn-summarize">
+                    <i class="fas fa-wand-magic-sparkles"></i> Сократить описание
+                </button>
+            </div>
+            <pre id="description-box" data-original-description="{{ description | e }}">{{ description if description else 'Нет описания' }}</pre> 
+
+            <div id="summary-container" style="display: none;">
+                <h4><i class="fas fa-brain"></i> Сокращенное описание (AI):</h4>
+                <pre id="summary-box"></pre>
+                <button type="button" class="btn-close-summary" id="close-summary-btn" title="Убрать сокращенное описание">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="summary-error-message" class="flash-error" style="display: none; margin-top: 10px;"></div>
+        </div>
+
+        <div class="comments-section">
+            <h3 class="section-title">
+                <i class="fas fa-comments"></i> Популярные комментарии
+            </h3>
+            <div id="comments-data-container" style="display: none;" data-comments='{{ comments | tojson | safe }}'></div>
+            {% if comments %}
+                <div class="comments-container">
+                    {% for comment_item in comments %}
+                        <div class="comment-item">
+                            <div class="comment-author">
+                                <i class="fas fa-user-circle"></i> {{ comment_item.author }}
+                            </div>
+                            <div class="comment-content">{{ comment_item.text | safe }}</div>
+                            <div class="comment-actions">
+                                <button type="button" class="btn-reply" onclick="setReplyTo('{{ comment_item.id }}', '{{ comment_item.author }}')">
+                                    <i class="fas fa-reply"></i> Ответить
+                                </button>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="no-comments">
+                    <i class="fas fa-comment-slash fa-2x"></i>
+                    <p>Комментарии не найдены или отключены.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="comment-form">
+            <div class="comment-form-header">
+                <h3 class="section-title">
+                    <i class="fas fa-reply"></i> Ваш комментарий и действия
+                </h3>
+                <div class="section-actions">
+                    <div class="ai-model-selector-container">
+                        <select id="ai-model-select" class="ai-model-selector">
+                            <option value="v1"
+                                    data-api-url="{{ url_for('generate_comment_route') }}"
+                                    data-btn-class="btn-generate-ai-v1"
+                                    data-icon-class="fas fa-robot"
+                                    data-text="AI V1">
+                                Модель V1
+                            </option>
+                            <option value="v2"
+                                    data-api-url="{{ url_for('generate_comment_v2_route') }}"
+                                    data-btn-class="btn-generate-ai-v2"
+                                    data-icon-class="fas fa-brain"
+                                    data-text="AI V2">
+                                Модель V2
+                            </option>
+                            <option value="v3"
+                                    data-api-url="{{ url_for('generate_comment_v3_route') }}"
+                                    data-btn-class="btn-generate-ai-v3"
+                                    data-icon-class="fas fa-brain"
+                                    data-text="AI V3">
+                                Модель V3(История обязательно)
+                            </option>
+                            <!-- Добавляйте сюда новые модели как <option> -->
+                        </select>
+                    </div>
+                    <div class="history-switch-container">
+                        <label class="history-switch">
+                            <input type="checkbox" id="use-history-switch">
+                            <span class="slider round"></span>
+                        </label>
+                        <label for="use-history-switch" class="history-switch-label">Исп. историю?</label>
+                    </div>
+                    <button type="button" id="generate-ai-comment-btn" class="btn-generate-ai">
+                        <i></i> <span></span>
+                    </button>
+                </div>
+            </div>
+            <div id="generate-error-message"></div>
+            <div id="ai-comment-container" style="display: none;">
+                <h4><i class="fas fa-microchip"></i> Предложение от AI</h4>
+                <textarea id="ai-comment-textarea" rows="5" placeholder="Здесь появится сгенерированный комментарий..."></textarea>
+                <div class="ai-comment-actions">
+                    <button type="button" id="post-ai-comment-btn" class="btn-post-ai">
+                        <i class="fas fa-paper-plane"></i> Опубликовать этот AI коммент
+                    </button>
+                </div>
+                <div id="ai-post-status"></div>
+                <button type="button" class="btn-close-ai" id="close-ai-comment-btn" title="Закрыть блок AI">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="prompt-container">
+                <label for="ai_prompt_textarea" class="prompt-label">
+                    <i class="fas fa-lightbulb"></i> Промпт для AI (необязательно):
+                </label>
+                <textarea id="ai_prompt_textarea" class="prompt-textarea" rows="3" placeholder="Сообщение тёке нейро..."></textarea>
+            </div>
+
+           <form method="post" action="{{ url_for('submit_action') }}" id="comment-main-form">
+               <input type="hidden" name="video_id" value="{{ video_id }}">
+               <input type="hidden" name="reply_to_id" id="reply_to_id" value="">
+               <input type="hidden" name="summarized_description" id="summarized_description_hidden" value="">
+
+               <div id="reply-status" class="reply-status" style="display: none;">
+                   <i class="fas fa-reply"></i> Ответ на комментарий: <b id="reply-author-name" style="margin-left: 5px;"></b>
+                   <button type="button" class="btn-cancel-reply" onclick="cancelReply()">
+                       <i class="fas fa-times"></i>
+                   </button>
+               </div>
+
+               <div class="textarea-container">
+                   <textarea name="comment_text" id="comment_text_area" rows="5" placeholder="Введите ваш комментарий здесь..."></textarea>
+               </div>
+
+                <div class="actions-container">
+                    <div class="related-index-input">
+                        <label for="related_index">
+                            <i class="fas fa-random"></i> Индекс связанного видео:
+                        </label>
+                        <input type="number" id="related_index" name="related_index" min="1" max="50" value="{{ default_related_index }}">
+                        <small>(Используется кнопками "найти связанное")</small>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="submit" name="action" value="post_related" class="btn-post-related">
+                            <i class="fas fa-comment-dots"></i> Опубликовать и найти связанное
+                        </button>
+                        <button type="submit" name="action" value="skip_related" class="btn-skip-related">
+                            <i class="fas fa-forward"></i> Пропустить и найти связанное
+                        </button>
+                        <button type="submit" name="action" value="post_list" class="btn-post-list">
+                            <i class="fas fa-list-ol"></i> Опубликовать и продолжить по списку
+                        </button>
+                        <button type="submit" name="action" value="skip_list" class="btn-skip-list">
+                            <i class="fas fa-step-forward"></i> Пропустить и продолжить по списку
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="container typo-generator-section">
+        <h3><i class="fas fa-keyboard"></i> Генератор "человеческих" опечаток</h3>
+
+        <div class="textarea-container">
+             <label for="typo-input-text" style="font-weight: 600; display: block; margin-bottom: 8px;">Текст для обработки:</label>
+             <textarea id="typo-input-text" rows="4" placeholder="Вставьте сюда текст, чтобы добавить опечатки..."></textarea>
+        </div>
+
+        <div class="typo-inputs-grid">
+            <div class="typo-input-group">
+                <label for="typo-sub-chance">Шанс замены (0-1):</label>
+                <input type="number" id="typo-sub-chance" step="0.001" min="0" max="1" value="0.01">
+            </div>
+            <div class="typo-input-group">
+                <label for="typo-trans-chance">Шанс перестановки (0-1):</label>
+                <input type="number" id="typo-trans-chance" step="0.001" min="0" max="1" value="0.005">
+            </div>
+            <div class="typo-input-group">
+                <label for="typo-skip-chance">Шанс пропуска (0-1):</label>
+                <input type="number" id="typo-skip-chance" step="0.001" min="0" max="1" value="0.002">
+            </div>
+        </div>
+
+        <button type="button" id="apply-typos-btn" class="btn-apply-typos">
+            <i class="fas fa-random"></i> Применить опечатки
+        </button>
+
+        <div id="typo-output-container">
+             <label for="typo-output-text">Результат:</label>
+             <div id="typo-output-text" placeholder="Здесь появится текст с опечатками..."></div>
+             <button type="button" class="btn-copy-typo" id="copy-typo-btn" title="Копировать результат">
+                <i class="fas fa-copy"></i> Копировать
+             </button>
+        </div>
+    </div>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const summarizeBtn = document.getElementById('summarize-btn');
+        const descriptionBox = document.getElementById('description-box');
+        const summaryContainer = document.getElementById('summary-container');
+        const summaryBox = document.getElementById('summary-box');
+        const closeSummaryBtn = document.getElementById('close-summary-btn');
+        const hiddenSummaryInput = document.getElementById('summarized_description_hidden');
+        const summaryErrorDiv = document.getElementById('summary-error-message');
+        const videoTitleElementForSummarize = document.querySelector('.video-info h3');
+        const channelElementForSummarize = Array.from(document.querySelectorAll('.detail-item')).find(item => item.querySelector('.detail-label i.fa-user'));
+        const channelNameElementForSummarize = channelElementForSummarize ? channelElementForSummarize.querySelector('.detail-value') : null;
+
+        const aiModelSelect = document.getElementById('ai-model-select');
+        const historySwitch = document.getElementById('use-history-switch');
+        const generateAiBtn = document.getElementById('generate-ai-comment-btn');
+        const generateAiBtnIcon = generateAiBtn ? generateAiBtn.querySelector('i') : null;
+        const generateAiBtnTextSpan = generateAiBtn ? generateAiBtn.querySelector('span') : null;
+
+        const aiCommentContainer = document.getElementById('ai-comment-container');
+        const aiCommentTextarea = document.getElementById('ai-comment-textarea');
+        const generateErrorDiv = document.getElementById('generate-error-message');
+        const commentsDataDiv = document.getElementById('comments-data-container');
+        const videoTitleElement = document.querySelector('.video-info h3'); 
+        const channelElement = channelElementForSummarize; 
+        const channelNameElement = channelNameElementForSummarize; 
+        const descriptionBoxForApi = descriptionBox; 
+        const hiddenSummaryInputForApi = hiddenSummaryInput; 
+
+        const aiPromptTextarea = document.getElementById('ai_prompt_textarea');
+        const postAiCommentBtn = document.getElementById('post-ai-comment-btn');
+        const closeAiCommentBtn = document.getElementById('close-ai-comment-btn');
+        const aiPostStatusDiv = document.getElementById('ai-post-status');
+
+        const replyToIdInput = document.getElementById('reply_to_id');
+        const replyStatusDiv = document.getElementById('reply-status');
+        const replyAuthorNameSpan = document.getElementById('reply-author-name');
+        const commentTextArea = document.getElementById('comment_text_area'); 
+
+        function showSummaryError(message) {
+            if (summaryErrorDiv) { summaryErrorDiv.textContent = message; summaryErrorDiv.style.display = 'block'; }
+        }
+        function hideSummaryError() {
+            if (summaryErrorDiv) { summaryErrorDiv.style.display = 'none'; summaryErrorDiv.textContent = ''; }
+        }
+        function showGenerateError(message) {
+            if (generateErrorDiv) { generateErrorDiv.textContent = message; generateErrorDiv.style.display = 'block'; }
+        }
+        function hideGenerateError() {
+            if (generateErrorDiv) { generateErrorDiv.style.display = 'none'; generateErrorDiv.textContent = ''; }
+        }
+        function showAiPostStatus(message, type = 'info') {
+            if (aiPostStatusDiv) {
+                aiPostStatusDiv.textContent = message;
+                aiPostStatusDiv.className = `ai-post-status ${type}`;
+                aiPostStatusDiv.style.display = 'block';
+            }
+        }
+        function hideAiPostStatus() {
+            if (aiPostStatusDiv) { aiPostStatusDiv.style.display = 'none'; aiPostStatusDiv.textContent = ''; }
+        }
+
+        window.setReplyTo = function(commentId, authorName) { 
+            if (replyToIdInput && replyAuthorNameSpan && replyStatusDiv && commentTextArea) {
+                replyToIdInput.value = commentId;
+                replyAuthorNameSpan.textContent = authorName;
+                replyStatusDiv.style.display = 'flex'; 
+                commentTextArea.focus();
+            } else {
+                console.error("Не найдены все элементы для функции ответа.");
+            }
+        }
+
+        // --- Функция: Отменить ответ ---
+        window.cancelReply = function() { 
+            if (replyToIdInput && replyStatusDiv) {
+                replyToIdInput.value = '';
+                replyStatusDiv.style.display = 'none';
+            }
+        }
+
+        async function handleGenerateComment(buttonElement, apiUrl, buttonHTMLContent) {
+            if (!videoTitleElement || !channelNameElement || !descriptionBoxForApi || !commentsDataDiv || !aiCommentContainer || !aiCommentTextarea) {
+                console.error("Не найдены все необходимые элементы для генерации комментария.");
+                showGenerateError("Ошибка интерфейса: Не найдены все элементы.");
+                return;
+            }
+
+            const videoTitle = videoTitleElement.textContent.trim();
+            const channelName = channelNameElement.textContent.trim();
+            const promptText = aiPromptTextarea.value.trim();
+            const useHistory = historySwitch ? historySwitch.checked : false;
+            
+            const descriptionForApi = hiddenSummaryInputForApi.value || descriptionBoxForApi.dataset.originalDescription || descriptionBoxForApi.textContent;
+            let commentsData = [];
+            try {
+                const commentsJsonString = commentsDataDiv.dataset.comments;
+                
+                if (typeof commentsJsonString === 'string' && commentsJsonString.trim() !== '' && commentsJsonString.trim() !== 'null') {
+                    commentsData = JSON.parse(commentsJsonString);
+                }
+                
+                if (!Array.isArray(commentsData) || !commentsData.every(item => typeof item === 'object')) {
+                    console.warn("Распарсенные данные комментариев не массив объектов или пустые, используем пустой список.", commentsData);
+                    commentsData = [];
+                }
+            } catch (e) {
+                console.error("Ошибка парсинга данных комментариев:", e, "Строка:", commentsDataDiv.dataset.comments);
+                showGenerateError("Не удалось прочитать данные комментариев для отправки AI.");
+                return;
+            }
+
+            buttonElement.disabled = true;
+            buttonElement.innerHTML = '<span class="spinner"></span> Генерация...';
+            hideGenerateError();
+            hideAiPostStatus(); 
+
+            const payload = {
+                title: videoTitle,
+                channel: channelName,
+                description: descriptionForApi,
+                comments: commentsData,
+                use_history: useHistory
+            };
+
+            if (promptText) { 
+                payload.prompt = promptText;
+            }
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    
+                    body: JSON.stringify(payload) 
+                });
+                const data = await response.json();
+
+                if (response.ok && data.comment) {
+                    aiCommentTextarea.value = data.comment;
+                    aiCommentContainer.style.display = 'block';
+                    aiCommentTextarea.focus();
+                    aiCommentTextarea.scrollTop = 0; 
+                } else {
+                    const errorMessage = data.error || `Ошибка сервера: ${response.status}`;
+                    showGenerateError(`Не удалось сгенерировать комментарий: ${errorMessage}`);
+                    console.error("Ошибка генерации:", data);
+                    aiCommentContainer.style.display = 'none'; 
+                }
+            } catch (error) {
+                showGenerateError(`Сетевая ошибка при запросе генерации: ${error.message}`);
+                console.error("Сетевая ошибка генерации:", error);
+                aiCommentContainer.style.display = 'none';
+            } finally {
+                buttonElement.disabled = false;
+                
+                buttonElement.innerHTML = buttonHTMLContent;
+            }
+        }
+
+        
+        function updateGenerateButtonAppearance() {
+            if (!aiModelSelect || !generateAiBtn || !generateAiBtnIcon || !generateAiBtnTextSpan) return;
+
+            const selectedOption = aiModelSelect.options[aiModelSelect.selectedIndex];
+            if (!selectedOption) {
+                
+                generateAiBtn.disabled = true;
+                generateAiBtnTextSpan.textContent = "Модель не выбрана";
+                generateAiBtnIcon.className = 'fas fa-question-circle';
+                generateAiBtn.classList.remove('btn-generate-ai-v1', 'btn-generate-ai-v2','btn-generate-ai-v3'); 
+                return;
+            }
+
+            generateAiBtn.disabled = false; 
+            const btnClass = selectedOption.dataset.btnClass;
+            const iconClass = selectedOption.dataset.iconClass;
+            const text = selectedOption.dataset.text;
+
+            
+            generateAiBtnTextSpan.textContent = `Сгенерировать (${text})`;
+
+            generateAiBtnIcon.className = iconClass;
+
+            generateAiBtn.classList.remove('btn-generate-ai-v1', 'btn-generate-ai-v2', 'btn-generate-ai-v3'); // Добавьте сюда классы для будущих моделей
+            if (btnClass) {
+                generateAiBtn.classList.add(btnClass);
+            }
+        }
+
+        // --- Обработчик: Кнопка "Сократить описание" ---
+        if (summarizeBtn && descriptionBox && summaryContainer && summaryBox && closeSummaryBtn && hiddenSummaryInput && summaryErrorDiv) {
+            summarizeBtn.addEventListener('click', async () => {
+                const originalDescription = descriptionBox.dataset.originalDescription || descriptionBox.textContent;
+                const videoTitle = videoTitleElementForSummarize ? videoTitleElementForSummarize.textContent.trim() : 'Название неизвестно';
+                const channelName = channelNameElementForSummarize ? channelNameElementForSummarize.textContent.trim() : 'Канал неизвестен';
+
+                if (!originalDescription || originalDescription.trim() === 'Нет описания') {
+                    showSummaryError('Нечего сокращать. Описание пустое.');
+                    return;
+                }
+
+                summarizeBtn.disabled = true;
+                summarizeBtn.innerHTML = '<span class="spinner"></span> Обработка...';
+                hideSummaryError();
+                summaryContainer.style.display = 'none'; 
+                hiddenSummaryInput.value = ''; 
+
+                try {
+                    const response = await fetch("{{ url_for('summarize_description_route') }}", {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ description: originalDescription, title: videoTitle, channel: channelName })
+                    });
+                    const data = await response.json();
+
+                    if (response.ok && data.summary) {
+                        summaryBox.textContent = data.summary;
+                        hiddenSummaryInput.value = data.summary; 
+                        summaryContainer.style.display = 'block'; 
+                        summaryContainer.classList.remove('summary-error'); 
+                    } else {
+                        const errorMessage = data.error || `Ошибка сервера: ${response.status}`;
+                        showSummaryError(`Не удалось сократить описание: ${errorMessage}`);
+                        summaryContainer.style.display = 'none'; 
+                        console.error("Ошибка сокращения:", data);
+                    }
+                } catch (error) {
+                    showSummaryError(`Сетевая ошибка при запросе к API: ${error.message}`);
+                    summaryContainer.style.display = 'none';
+                    console.error("Сетевая ошибка:", error);
+                } finally {
+                    summarizeBtn.disabled = false;
+                    summarizeBtn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> Сократить описание';
+                }
+            });
+        } else {
+            console.error("Не найдены все элементы для функции сокращения описания.");
+        }
+
+        // --- Обработчик: Кнопка "Закрыть сокращенное описание" ---
+        if (closeSummaryBtn && summaryContainer && summaryBox && hiddenSummaryInput && summaryErrorDiv) {
+            closeSummaryBtn.addEventListener('click', () => {
+                summaryContainer.style.display = 'none';
+                summaryBox.textContent = '';
+                hiddenSummaryInput.value = ''; 
+                hideSummaryError(); 
+            });
+        }
+
+        // --- Инициализация и обработчики событий для новой системы генерации AI ---
+        if (aiModelSelect && generateAiBtn) {
+            updateGenerateButtonAppearance();
+
+            aiModelSelect.addEventListener('change', updateGenerateButtonAppearance);
+
+            generateAiBtn.addEventListener('click', () => {
+                const selectedOption = aiModelSelect.options[aiModelSelect.selectedIndex];
+                if (!selectedOption || generateAiBtn.disabled) { 
+                    showGenerateError("Ошибка: Модель не выбрана или генерация уже идет.");
+                    return;
+                }
+
+                const apiUrl = selectedOption.dataset.apiUrl;
+                const iconClass = selectedOption.dataset.iconClass;
+                const text = selectedOption.dataset.text;
+
+                if (!apiUrl) {
+                    showGenerateError(`Ошибка: API URL не найден для выбранной модели '${text}'.`);
+                    console.error("Missing data-api-url on selected option:", selectedOption);
+                    return;
+                }
+
+                
+                const buttonHTMLContent = `<i class="${iconClass}"></i> <span>Сгенерировать (${text})</span>`;
+
+                handleGenerateComment(generateAiBtn, apiUrl, buttonHTMLContent);
+            });
+
+        } else {
+            console.error("Не найдены элементы ai-model-select или generate-ai-comment-btn.");
+        }
+
+
+        if (postAiCommentBtn && aiCommentTextarea && aiPostStatusDiv) {
+            postAiCommentBtn.addEventListener('click', async () => {
+                const commentText = aiCommentTextarea.value.trim();
+                const videoIdInput = document.querySelector('input[name="video_id"]');
+                const videoId = videoIdInput ? videoIdInput.value : null;
+                const replyToId = replyToIdInput ? replyToIdInput.value : ''; 
+
+                if (!commentText) {
+                    showAiPostStatus("Текст AI комментария пуст.", 'error');
+                    aiCommentTextarea.focus();
+                    return;
+                }
+                if (!videoId) {
+                    showAiPostStatus("Ошибка: Video ID не найден на странице.", 'error');
+                    return;
+                }
+
+                postAiCommentBtn.disabled = true;
+                postAiCommentBtn.innerHTML = '<span class="spinner" style="border-top: 2px solid white;"></span> Публикация...';
+                hideAiPostStatus();
+
+                try {
+                    const response = await fetch("{{ url_for('post_ai_comment_route') }}", {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            video_id: videoId,
+                            comment_text: commentText,
+                            reply_to_id: replyToId 
+                            })
+                    });
+                    const data = await response.json();
+
+                    if (response.ok && data.success) {
+                        showAiPostStatus("AI комментарий успешно опубликован!", 'success');
+                    } else {
+                        const errorMsg = data.error || `Ошибка сервера: ${response.status}`;
+                        showAiPostStatus(`Не удалось опубликовать AI коммент: ${errorMsg}`, 'error');
+                        console.error("Ошибка публикации AI коммента:", data);
+                    }
+                } catch (error) {
+                    showAiPostStatus(`Сетевая ошибка при публикации AI коммента: ${error.message}`, 'error');
+                    console.error("Сетевая ошибка публикации AI:", error);
+                } finally {
+                    postAiCommentBtn.disabled = false;
+                    postAiCommentBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Опубликовать этот AI коммент';
+                }
+            });
+        } else {
+            console.error("Не найдены элементы post-ai-comment-btn, ai-comment-textarea или ai-post-status.");
+        }
+
+        // --- Обработчик: Кнопка закрытия блока AI комментария ---
+        if (closeAiCommentBtn && aiCommentContainer) {
+            closeAiCommentBtn.addEventListener('click', () => {
+                aiCommentContainer.style.display = 'none';
+                hideGenerateError(); 
+                hideAiPostStatus(); 
+            });
+        } else {
+            console.error("Не найдены close-ai-comment-btn или ai-comment-container.");
+        }
+
+        // --- Начальная проверка статуса ответа ---
+        if (replyToIdInput && replyStatusDiv) {
+            if (!replyToIdInput.value) {
+                replyStatusDiv.style.display = 'none';
+            } else {
+                replyStatusDiv.style.display = 'flex'; 
+            }
+        }
+
+    }); 
+
+
+
+
+
+
+
+    const applyTyposBtn = document.getElementById('apply-typos-btn');
+        const typoInputText = document.getElementById('typo-input-text');
+        const typoSubChanceInput = document.getElementById('typo-sub-chance');
+        const typoTransChanceInput = document.getElementById('typo-trans-chance');
+        const typoSkipChanceInput = document.getElementById('typo-skip-chance');
+    
+        const typoOutputDiv = document.getElementById('typo-output-text');
+        const copyTypoBtn = document.getElementById('copy-typo-btn');
+
+        if (applyTyposBtn && typoInputText && typoSubChanceInput && typoTransChanceInput && typoSkipChanceInput && typoOutputDiv && copyTypoBtn) {
+
+            applyTyposBtn.addEventListener('click', async () => {
+                const originalText = typoInputText.value; 
+                const subChance = parseFloat(typoSubChanceInput.value);
+                const transChance = parseFloat(typoTransChanceInput.value);
+                const skipChance = parseFloat(typoSkipChanceInput.value);
+
+                if (isNaN(subChance) || isNaN(transChance) || isNaN(skipChance)) {
+                    typoOutputDiv.textContent = "Ошибка: Введите корректные числовые значения для шансов."; 
+                    typoOutputDiv.classList.add("flash-error"); 
+                    return;
+                }
+                typoOutputDiv.classList.remove("flash-error"); 
+
+                applyTyposBtn.disabled = true;
+                applyTyposBtn.innerHTML = '<span class="spinner" style="border: 2px solid rgba(255,255,255,.3); border-top: 2px solid white; width: 14px; height: 14px; margin-right: 8px;"></span> Обработка...';
+                typoOutputDiv.innerHTML = "<i>Генерация...</i>"; 
+
+                try {
+                    const response = await fetch("{{ url_for('apply_typos_route') }}", {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            text: originalText, 
+                            sub_chance: subChance,
+                            trans_chance: transChance,
+                            skip_chance: skipChance
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok && data.result_text !== undefined) {
+                        const modifiedText = data.result_text;
+                        
+                        let outputHtml = '';
+                        const len = Math.max(originalText.length, modifiedText.length);
+                        for (let i = 0; i < len; i++) {
+                            const originalChar = originalText[i];
+                            const modifiedChar = modifiedText[i];
+
+                            if (modifiedChar === undefined) {
+                                
+                            } else if (originalChar === undefined || originalChar !== modifiedChar) {
+                                const escapedChar = modifiedChar.replace(/&/g, "&").replace(/</g, "<").replace(/>/g, ">");
+                                outputHtml += `<span class="diff-char">${escapedChar}</span>`;
+                            } else {
+                                
+                                const escapedChar = modifiedChar.replace(/&/g, "&").replace(/</g, "<").replace(/>/g, ">");
+                                outputHtml += escapedChar;
+                            }
+                        }
+                        typoOutputDiv.innerHTML = outputHtml; 
+                        
+                    } else {
+                        typoOutputDiv.textContent = `Ошибка: ${data.error || 'Не удалось получить результат от сервера.'}`;
+                        typoOutputDiv.classList.add("flash-error");
+                    }
+
+                } catch (error) {
+                    console.error("Ошибка при запросе опечаток:", error);
+                    typoOutputDiv.textContent = `Сетевая ошибка: ${error.message}`;
+                     typoOutputDiv.classList.add("flash-error");
+                } finally {
+                    applyTyposBtn.disabled = false;
+                    applyTyposBtn.innerHTML = '<i class="fas fa-random"></i> Применить опечатки';
+                }
+            });
+
+            
+             copyTypoBtn.addEventListener('click', () => {
+                const textToCopy = typoOutputDiv.textContent;
+                if (!textToCopy) return; 
+
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    
+                    const originalText = copyTypoBtn.innerHTML;
+                    copyTypoBtn.innerHTML = '<i class="fas fa-check"></i> Скопировано!';
+                    setTimeout(() => {
+                         copyTypoBtn.innerHTML = originalText;
+                    }, 1500);
+                }).catch(err => {
+                    
+                    console.error('Не удалось скопировать текст через navigator.clipboard: ', err);
+                    
+                    try {
+                         const tempTextArea = document.createElement('textarea');
+                         tempTextArea.value = textToCopy;
+                         document.body.appendChild(tempTextArea);
+                         tempTextArea.select();
+                         document.execCommand('copy');
+                         document.body.removeChild(tempTextArea);
+
+                         const originalText = copyTypoBtn.innerHTML;
+                         copyTypoBtn.innerHTML = '<i class="fas fa-check"></i> Скопировано!';
+                         setTimeout(() => { copyTypoBtn.innerHTML = originalText; }, 1500);
+                    } catch (fallbackErr) {
+                         console.error('Не удалось скопировать текст и старым методом: ', fallbackErr);
+                         alert('Не удалось скопировать текст. Попробуйте вручную.');
+                    }
+                });
+            });
+
+        } else {
+            console.warn("Не все элементы для генератора опечаток найдены на странице.");
+        }
+    
+    </script>
+</body>
+</html>

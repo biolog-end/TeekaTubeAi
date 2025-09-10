@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Автоматическая обработка - Порция {{ current_batch_index + 1 }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+            --generating-color: #6f42c1; 
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #343a40;
+            --text-muted: #6c757d;
+            --border-color: #dee2e6;
+            --border-radius: 0.375rem; 
+            --box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
+            --transition-speed: 0.2s;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            padding: 25px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 950px;
+            margin: auto;
+            background: var(--card-bg);
+            padding: 30px 40px;
+            box-shadow: var(--box-shadow);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: var(--text-color);
+            margin-bottom: 15px;
+        }
+        h1 { font-size: 1.8em; font-weight: 700; }
+        h2 { font-size: 1.3em; font-weight: 500; color: var(--text-muted); margin-bottom: 30px;}
+        h1 i { margin-right: 10px; color: var(--primary-color); }
+
+        .video-block {
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            margin-bottom: 25px;
+            border-radius: var(--border-radius);
+            background-color: var(--card-bg);
+            box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.04);
+            transition: box-shadow var(--transition-speed) ease-in-out;
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        .video-block:hover {
+             box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.06);
+        }
+
+        .related-videos-container {
+            margin-top: 20px;
+            padding-left: 20px;
+            border-left: 3px solid var(--info-color); 
+        }
+        .video-block.related {
+            margin-left: 0; 
+            margin-top: 15px;
+            border-color: var(--info-color);
+            background-color: #f0f8ff; 
+            animation: slideDownFadeIn 0.6s ease-out forwards; 
+        }
+
+        .video-block h3 {
+            margin-top: 0;
+            font-size: 1.15em;
+            color: var(--text-color);
+            font-weight: 500;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        .video-block.related h3::before {
+            content: '\f0c1'; 
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            margin-right: 8px;
+            color: var(--info-color);
+            font-size: 0.9em;
+        }
+
+
+        .video-block p { margin: 6px 0; font-size: 0.95em; color: var(--text-muted);}
+        .video-block p strong { color: var(--text-color); font-weight: 500; }
+        .video-block .video-title strong, .video-block .video-channel strong {
+            font-weight: 700; 
+        }
+
+        .comments-preview, .summary-section {
+            margin-top: 15px;
+            border-top: 1px dashed #e0e0e0;
+            padding-top: 15px;
+        }
+         .comments-preview h4, .summary-section h4 {
+            margin-top: 0; margin-bottom: 8px; font-size: 0.95em; color: var(--text-muted); font-weight: 500;
+            display: flex; align-items: center;
+         }
+         .comments-preview h4 i, .summary-section h4 i {
+             margin-right: 6px;
+             font-size: 1em;
+             width: 16px; 
+             text-align: center;
+         }
+        .comments-preview .comment {
+            font-size: 0.9em; margin-bottom: 6px; padding: 5px 0px 5px 10px; border-left: 2px solid #eee;
+            background-color: #fdfdfd;
+            color: #555;
+        }
+        .comments-preview .comment-author { font-weight: bold; color: var(--primary-color); margin-right: 5px;}
+        .comments-preview .no-comments { font-style: italic; color: #aaa; font-size: 0.9em;}
+        .summary-box { 
+            background-color: #f5f5f5; padding: 12px; border-radius: var(--border-radius);
+            white-space: pre-wrap; word-wrap: break-word; font-size: 0.9em;
+            max-height: 120px; overflow-y: auto; border: 1px solid #eee;
+            color: #444; font-family: monospace;
+         }
+
+        .generated-comment-section { margin-top: 15px; }
+        .generated-comment-section p { margin-bottom: 8px; color: var(--text-muted); font-weight: 500;}
+        .video-block textarea {
+            width: 100%; min-height: 90px; margin-top: 5px; border: 1px solid var(--border-color);
+            border-radius: var(--border-radius); padding: 10px; box-sizing: border-box; font-size: 0.95em;
+            line-height: 1.5; transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
+        }
+        .video-block textarea:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        .video-block textarea:read-only {
+            background-color: #e9ecef;
+            cursor: not-allowed;
+        }
+
+        .status-section {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap; 
+            gap: 10px;
+        }
+        .status, .post-status {
+            font-weight: 500; padding: 6px 12px; border-radius: var(--border-radius); display: inline-flex; align-items: center; font-size: 0.9em; transition: background-color var(--transition-speed), color var(--transition-speed);
+        }
+        .status i, .post-status i { margin-right: 6px; }
+        .status .spinner { margin-right: 6px; font-size: 1em; } 
+
+        .status.processing, .status.summarizing, .status.generating { background-color: var(--warning-color); color: #fff; }
+        .status.success, .status.posted { background-color: var(--success-color); color: #fff; }
+        .status.error, .status.post-error { background-color: var(--error-color); color: #fff; }
+        .status.skipped { background-color: #f8f9fa; color: var(--text-muted); border: 1px solid var(--border-color); }
+        .status.posting { background-color: var(--info-color); color: #fff; }
+
+        .action-button {
+            display: inline-block;
+            width: auto;
+            padding: 12px 25px; font-size: 1em; font-weight: 500; cursor: pointer; border: none;
+            border-radius: var(--border-radius); margin-top: 25px; color: white; text-align: center;
+            transition: background-color var(--transition-speed), transform var(--transition-speed), box-shadow var(--transition-speed);
+            box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .action-button i { margin-right: 8px; }
+        .action-button:not(:disabled):hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.1);
+        }
+        .action-button:disabled { background-color: #adb5bd; cursor: not-allowed; box-shadow: none; }
+
+        .btn-post { background-color: var(--success-color); }
+        .btn-post:not(:disabled):hover { background-color: #218838; }
+        .btn-next { background-color: var(--primary-color); }
+        .btn-next:not(:disabled):hover { background-color: #0056b3; }
+        .btn-home { background-color: var(--text-muted); text-decoration: none; }
+        .btn-home:hover { background-color: #5a6268; }
+
+        .button-container { 
+             display: flex;
+             justify-content: space-between; 
+             align-items: center;
+             flex-wrap: wrap; 
+             margin-top: 30px;
+             padding-top: 20px;
+             border-top: 1px solid var(--border-color);
+        }
+
+        .spinner { display: inline-block; width: 1em; height: 1em; border: 2px solid rgba(255,255,255,.3); border-radius: 50%; border-top-color: currentColor; animation: spin 0.8s linear infinite; vertical-align: middle;}
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .overall-status { text-align: center; margin-top: 20px; font-weight: 500; padding: 15px; background-color: #eef; border-radius: var(--border-radius); border: 1px solid #cce; color: #339; }
+
+        .error-message { color: var(--error-color); font-size: 0.9em; margin-top: 8px; font-weight: 500;}
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideDownFadeIn {
+            from { opacity: 0; transform: translateY(-15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .save-toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 8px; 
+        }
+
+        .save-toggle-label {
+            font-size: 0.85em;
+            color: var(--text-muted);
+            user-select: none; 
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 20px; 
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .3s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px; 
+            width: 14px;  
+            left: 3px;  
+            bottom: 3px; 
+            background-color: white;
+            transition: .3s;
+        }
+
+        input:checked + .slider {
+            background-color: var(--success-color);
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--success-color);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(20px); 
+        }
+
+        .slider.round {
+            border-radius: 20px; 
+        }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container"
+         data-current-batch-index="{{ current_batch_index }}"
+         data-total-batches="{{ total_batches }}"
+         data-max-related-depth="{{ max_related_depth }}">
+
+        <h1><i class="fas fa-cogs"></i> Автоматическая обработка</h1>
+        <h2>Порция {{ current_batch_index + 1 }} / {{ total_batches }} (Видео {{ start_index + 1 }} - {{ end_index }})</h2>
+
+        <div id="processing-area">
+            {% for video_id in video_ids_for_this_batch %}
+            <div class="video-block" id="block-{{ video_id }}" data-video-id="{{ video_id }}">
+                <h3><i class="fab fa-youtube" style="color: #c00; margin-right: 8px;"></i> ID: <strong style="margin-left: 5px;">{{ video_id }}</strong></h3>
+                <p class="video-title">Название: <em>(загрузка...)</em></p>
+                <p class="video-channel">Канал: <em>(загрузка...)</em></p>
+
+                <div class="comments-preview">
+                    <h4><i class="fas fa-comments"></i> Комментарии (топ):</h4>
+                    <div class="comments-content"><em>(ожидание...)</em></div>
+                </div>
+
+                <div class="summary-section">
+                     <h4><i class="fas fa-file-alt"></i> Сокращенное описание:</h4>
+                     <pre class="summary-box"><em>(ожидание...)</em></pre>
+                </div>
+
+                 <div class="generated-comment-section">
+                    <p><i class="fas fa-robot" style="color: var(--generating-color);"></i> Сгенерированный комментарий:</p>
+                    <textarea class="comment-textarea" placeholder="Ожидание генерации..." readonly></textarea>
+                 </div>
+
+                 <div class="save-toggle-container">
+                    <label class="switch">
+                        <input type="checkbox" class="save-toggle-checkbox" data-video-id="{{ video_id }}">
+                        <span class="slider round"></span>
+                    </label>
+                    <span class="save-toggle-label">Сохранить в датасет</span>
+                </div>
+
+                <div class="related-videos-container"></div>
+                <p class="related-info" style="display: none; font-size: 0.85em; color: var(--text-muted); margin-top: 10px;"></p>
+
+                <div class="status-section">
+                    <div class="status processing"><span class="spinner"></span> Ожидание</div>
+                    <div class="post-status" style="display: none;"></div>
+                </div>
+                 <div class="error-message" style="display: none;"></div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div id="overall-status" class="overall-status" style="display: none;"></div>
+
+        <div class="button-container">
+            <button id="post-comments-btn" class="action-button btn-post" style="display: none;" disabled>
+                <i class="fas fa-paper-plane"></i> Отправить комментарии
+            </button>
+             <a href="{{ url_for('index') }}" class="action-button btn-home">
+                <i class="fas fa-home"></i> На главную
+            </a>
+            <button id="next-batch-btn" class="action-button btn-next" style="display: none;">
+                <i class="fas fa-arrow-right"></i> Следующая порция
+            </button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const processingArea = document.getElementById('processing-area');
+            const postCommentsBtn = document.getElementById('post-comments-btn');
+            const nextBatchBtn = document.getElementById('next-batch-btn');
+            const overallStatusDiv = document.getElementById('overall-status');
+            const containerDiv = document.querySelector('.container');
+    
+            const currentBatchIndex = parseInt(containerDiv.dataset.currentBatchIndex, 10);
+            const totalBatches = parseInt(containerDiv.dataset.totalBatches, 10);
+            let maxRelatedDepth = parseInt(containerDiv.dataset.maxRelatedDepth, 10);
+            if (isNaN(maxRelatedDepth) || maxRelatedDepth < 0) {
+                 console.warn(`Invalid maxRelatedDepth (${containerDiv.dataset.maxRelatedDepth}), defaulting to 1.`);
+                 maxRelatedDepth = 1;
+            }
+            console.log(`Max Related Depth set to: ${maxRelatedDepth}`); 
+    
+            const relatedVideoIndex = 8;
+    
+            let processingQueue = [];
+            let batchResults = {};
+            let processedInCurrentRun = new Set();
+            let isPosting = false;
+    
+            const statusIcons = {
+                processing: '<i class="fas fa-sync-alt fa-spin"></i>',
+                success: '<i class="fas fa-check-circle"></i>',
+                error: '<i class="fas fa-exclamation-triangle"></i>',
+                posting: '<i class="fas fa-paper-plane"></i>',
+                posted: '<i class="fas fa-check-double"></i>',
+                skipped: '<i class="fas fa-ban"></i>',
+                postError: '<i class="fas fa-times-circle"></i>'
+            };
+    
+            function updateStatus(videoId, statusClass, message, errorMsg = null) {
+                const block = document.getElementById(`block-${videoId}`);
+                if (!block) return;
+                const statusDiv = block.querySelector('.status');
+                const errorDiv = block.querySelector('.error-message');
+                if (!statusDiv || !errorDiv) return;
+                let iconHtml = '';
+                if (statusClass === 'processing' || statusClass === 'summarizing' || statusClass === 'generating') {
+                    iconHtml = '<span class="spinner"></span> ';
+                } else if (statusIcons[statusClass]) {
+                     iconHtml = statusIcons[statusClass] + ' ';
+                }
+                statusDiv.className = `status ${statusClass}`;
+                statusDiv.innerHTML = iconHtml + message;
+                errorDiv.textContent = errorMsg || '';
+                errorDiv.style.display = errorMsg ? 'block' : 'none';
+            }
+    
+            function updatePostStatus(videoId, message, statusClass) {
+                const block = document.getElementById(`block-${videoId}`);
+                if (!block) return;
+                const postStatusDiv = block.querySelector('.post-status');
+                if (!postStatusDiv) return;
+                let iconHtml = '';
+                 if (statusClass === 'posting') {
+                    iconHtml = '<span class="spinner"></span> ';
+                } else if (statusIcons[statusClass]) {
+                     iconHtml = statusIcons[statusClass] + ' ';
+                } else if (statusIcons[statusClass.replace('post-','postError')]) {
+                     iconHtml = statusIcons[statusClass.replace('post-','postError')] + ' ';
+                }
+                postStatusDiv.textContent = message;
+                postStatusDiv.innerHTML = iconHtml + postStatusDiv.innerHTML;
+                postStatusDiv.className = `post-status status ${statusClass}`;
+                postStatusDiv.style.display = 'block';
+           }
+    
+            function createVideoBlockElement(videoId, isRelated = false, depth = 0) {
+                const block = document.createElement('div');
+                block.className = 'video-block';
+                block.id = `block-${videoId}`;
+                block.dataset.videoId = videoId;
+                if (isRelated) {
+                    block.classList.add('related');
+                }
+                let depthInfo = isRelated ? ` (Глубина: ${depth})` : '';
+                block.innerHTML = `
+                    <h3>${isRelated ? '' : '<i class="fab fa-youtube" style="color: #c00; margin-right: 8px;"></i>'} ID: <strong style="margin-left: 5px;">${videoId}</strong>${depthInfo}</h3>
+                    <p class="video-title">Название: <em>(загрузка...)</em></p>
+                    <p class="video-channel">Канал: <em>(загрузка...)</em></p>
+                    <div class="comments-preview">
+                        <h4><i class="fas fa-comments"></i> Комментарии (топ):</h4>
+                        <div class="comments-content"><em>(ожидание...)</em></div>
+                    </div>
+                    <div class="summary-section">
+                         <h4><i class="fas fa-file-alt"></i> Сокращенное описание:</h4>
+                         <pre class="summary-box"><em>(ожидание...)</em></pre>
+                    </div>
+                     <div class="generated-comment-section">
+                        <p><i class="fas fa-robot" style="color: var(--generating-color);"></i> Сгенерированный комментарий:</p>
+                        <textarea class="comment-textarea" placeholder="Ожидание генерации..." readonly></textarea>
+                     </div>
+                    <div class="save-toggle-container">
+                        <label class="switch">
+                            <input type="checkbox" class="save-toggle-checkbox" data-video-id="{{ video_id }}">
+                            <span class="slider round"></span>
+                        </label>
+                        <span class="save-toggle-label">Сохранить в датасет</span>
+                    </div>
+                    <div class="related-videos-container"></div>
+                    <p class="related-info" style="display: none; font-size: 0.85em; color: var(--text-muted); margin-top: 10px;"></p>
+                    <div class="status-section">
+                        <div class="status processing"><span class="spinner"></span> Ожидание</div>
+                        <div class="post-status" style="display: none;"></div>
+                    </div>
+                     <div class="error-message" style="display: none;"></div>
+                `;
+                return block;
+            }
+    
+            async function processSingleVideo(videoId, parentVideoId = null, depth = 0) {
+                 if (processedInCurrentRun.has(videoId)) {
+                     console.log(`Skipping already processed ${videoId}.`);
+                     processNextInQueue();
+                     return;
+                 }
+                 processedInCurrentRun.add(videoId);
+    
+                let block = document.getElementById(`block-${videoId}`);
+                const isRelated = !!parentVideoId;
+    
+                if (!block && isRelated) {
+                    const parentBlock = document.getElementById(`block-${parentVideoId}`);
+                    const relatedContainer = parentBlock ? parentBlock.querySelector('.related-videos-container') : null;
+                    if (relatedContainer) {
+                        block = createVideoBlockElement(videoId, true, depth);
+                        relatedContainer.appendChild(block);
+                    } else {
+                        console.error(`No related container for parent ${parentVideoId}`);
+                        processNextInQueue();
+                        return;
+                    }
+                } else if (!block && !isRelated) {
+                     console.error(`Initial block ${videoId} not found!`);
+                     processNextInQueue();
+                     return;
+                }
+    
+                const titleP = block.querySelector('.video-title');
+                const channelP = block.querySelector('.video-channel');
+                const commentsContentDiv = block.querySelector('.comments-content');
+                const summaryPre = block.querySelector('.summary-box');
+                const commentTextarea = block.querySelector('.comment-textarea');
+                const relatedInfoP = block.querySelector('.related-info');
+    
+                updateStatus(videoId, 'processing', 'Получение деталей...');
+    
+                try {
+                    const response = await fetch(`{{ url_for('api_auto_process_video') }}`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ video_id: videoId, related_index: relatedVideoIndex })
+                    });
+    
+                    const data = await response.json();
+                    batchResults[videoId] = data;
+    
+                    titleP.innerHTML = `Название: <strong>${data.title || '(Не найдено)'}</strong>`;
+                    channelP.innerHTML = `Канал: <strong>${data.channel || '(Не найден)'}</strong>`;
+                    summaryPre.textContent = data.summarized_description || '(Не удалось сократить или пустое)';
+    
+                    if (data.comments && data.comments.length > 0) {
+                        commentsContentDiv.innerHTML = '';
+                        data.comments.forEach(comment => {
+                             const commentDiv = document.createElement('div');
+                             commentDiv.className = 'comment';
+                             const authorSpan = document.createElement('span');
+                             authorSpan.className = 'comment-author';
+                             authorSpan.textContent = `${comment.author || 'Аноним'}:`;
+                             commentDiv.appendChild(authorSpan);
+                             commentDiv.appendChild(document.createTextNode(` ${comment.text || ''}`));
+                             commentsContentDiv.appendChild(commentDiv);
+                        });
+                    } else {
+                        commentsContentDiv.innerHTML = '<em class="no-comments">Комментарии не найдены.</em>';
+                    }
+    
+                    if (data.success) {
+                        commentTextarea.value = data.generated_comment || '';
+                        commentTextarea.readOnly = false;
+                        updateStatus(videoId, 'success', 'Готово');
+    
+                        const relatedVideoId = data.related_video_id; 
+                        console.log(`Video ${videoId} (Depth ${depth}) finished. Found related: ${relatedVideoId}. Max depth: ${maxRelatedDepth}`); 
+    
+                        if (relatedVideoId) {
+                            if (depth < maxRelatedDepth) { 
+                                const alreadyProcessed = processedInCurrentRun.has(relatedVideoId);
+                                const alreadyInQueue = processingQueue.some(item => item.videoId === relatedVideoId);
+                                console.log(`Checking related ${relatedVideoId}: depth OK (${depth} < ${maxRelatedDepth}), processed=${alreadyProcessed}, inQueue=${alreadyInQueue}`); // Лог
+    
+                                if (!alreadyProcessed && !alreadyInQueue) {
+                                    relatedInfoP.textContent = `Добавлено связанное (${relatedVideoId}, глубина ${depth + 1}) для обработки.`;
+                                    relatedInfoP.style.display = 'block';
+                                    processingQueue.unshift({ videoId: relatedVideoId, parentVideoId: videoId, depth: depth + 1 });
+                                    console.log(`Added related ${relatedVideoId} (parent ${videoId}, depth ${depth + 1}) to queue.`);
+                                } else {
+                                     relatedInfoP.textContent = `Связанное (${relatedVideoId}) уже обработано или в очереди.`;
+                                     relatedInfoP.style.display = 'block';
+                                     console.log(`Related ${relatedVideoId} skipped (processed=${alreadyProcessed}, inQueue=${alreadyInQueue}).`);
+                                }
+                            } else {
+                                relatedInfoP.textContent = `Связанное (${relatedVideoId}) найдено, но достигнута макс. глубина (${maxRelatedDepth}).`;
+                                relatedInfoP.style.display = 'block';
+                                console.log(`Max depth (${maxRelatedDepth}) reached for video ${videoId}. Related ${relatedVideoId} not added.`);
+                            }
+                        }
+    
+                    } else {
+                         commentTextarea.value = '';
+                         commentTextarea.readOnly = true;
+                         updateStatus(videoId, 'error', 'Ошибка', data.error || 'Неизвестная ошибка');
+                    }
+    
+                } catch (error) {
+                     console.error(`Fetch error for ${videoId}:`, error);
+                     updateStatus(videoId, 'error', 'Ошибка сети', error.message);
+                     batchResults[videoId] = { success: false, error: `Сетевая ошибка: ${error.message}` };
+                     titleP.innerHTML = 'Название: <strong>(Ошибка сети)</strong>';
+                     channelP.innerHTML = 'Канал: <strong>(Ошибка сети)</strong>';
+                     commentsContentDiv.innerHTML = '<em class="no-comments">(Ошибка сети)</em>';
+                     summaryPre.textContent = '(Ошибка сети)';
+                     commentTextarea.readOnly = true;
+                }
+    
+                processNextInQueue();
+            }
+    
+            function processNextInQueue() {
+                if (processingQueue.length > 0) {
+                    const nextItem = processingQueue.shift();
+                    console.log(`Processing next from queue: ${nextItem.videoId} (Parent: ${nextItem.parentVideoId}, Depth: ${nextItem.depth})`);
+                    processSingleVideo(nextItem.videoId, nextItem.parentVideoId, nextItem.depth);
+                } else {
+                    console.log("Processing queue empty.");
+                    overallStatusDiv.textContent = 'Обработка порции завершена. Проверьте комментарии.';
+                    overallStatusDiv.style.display = 'block';
+                    postCommentsBtn.disabled = false;
+                    postCommentsBtn.style.display = 'inline-flex';
+                }
+            }
+    
+            async function postBatchComments() {
+                if (isPosting) return;
+                isPosting = true;
+                postCommentsBtn.disabled = true;
+                postCommentsBtn.innerHTML = '<span class="spinner"></span> Публикация...';
+                overallStatusDiv.textContent = 'Публикация комментариев...';
+                nextBatchBtn.style.display = 'none';
+
+                const commentsToProcess = [];
+                document.querySelectorAll('.video-block').forEach(block => {
+                    const videoId = block.dataset.videoId;
+                    const textarea = block.querySelector('.comment-textarea');
+                    const saveToggle = block.querySelector('.save-toggle-checkbox');
+
+                    if (!textarea) return;
+                    const commentText = textarea.value.trim();
+                    const shouldSave = saveToggle ? saveToggle.checked : false;
+                    const videoData = batchResults[videoId]; 
+
+                  
+                    if (videoData?.success && commentText) {
+                        const postData = {
+                            video_id: videoId,
+                            comment_text: commentText,
+                            reply_to_id: null, 
+                            save_to_dataset: shouldSave, 
+                            
+                            details_for_save: shouldSave ? {
+                                title: videoData.title || null,
+                                channel: videoData.channel || null,
+                                
+                                original_description: videoData.original_description || null,
+                                comments_data: videoData.comments || [],
+                                summarized_description: videoData.summarized_description || null
+                            } : null 
+                        };
+                        commentsToProcess.push(postData);
+                        updatePostStatus(videoId, 'В очереди на публикацию...', 'posting');
+                    } else if (videoData?.success && !commentText) {
+                        updatePostStatus(videoId, 'Пропущено (пусто)', 'skipped');
+                    } else if (videoData && !videoData.success) {
+                        updatePostStatus(videoId, 'Пропущено (ошибка ген.)', 'skipped');
+                    } else {
+                        updatePostStatus(videoId, 'Пропущено (не обработано)', 'skipped');
+                    }
+                });
+
+                if (commentsToProcess.length === 0) {
+                    overallStatusDiv.textContent = 'Нет комментариев для публикации.';
+                    isPosting = false;
+                    postCommentsBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Отправить комментарии';
+                    if (currentBatchIndex + 1 < totalBatches) {
+                        nextBatchBtn.style.display = 'inline-flex';
+                    } else {
+                        overallStatusDiv.textContent += ' Все порции обработаны!';
+                    }
+                    return;
+                }
+
+                console.log("Данные для отправки в /api/auto_post_comments:", JSON.stringify(commentsToProcess, null, 2));
+
+                try {
+                    
+                    const response = await fetch(`{{ url_for('api_auto_post_comments') }}`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ comments: commentsToProcess })
+                    });
+                    const data = await response.json();
+
+                    let postedCount = 0;
+                    let errorCount = 0;
+                    let savedCount = 0;
+
+                    if (response.ok && data.results) {
+                        data.results.forEach(result => {
+                           
+                            const correspondingRequest = commentsToProcess.find(c => c.video_id === result.video_id);
+                            const commentTextWasPresent = correspondingRequest && correspondingRequest.comment_text;
+                            const saveWasRequested = correspondingRequest && correspondingRequest.save_to_dataset;
+
+                            if (result.success) {
+                                let statusMsg = 'Опубликовано';
+                                if (result.saved_to_dataset) { 
+                                statusMsg += ' (сохранено)';
+                                savedCount++;
+                                } else if (result.save_attempted) { 
+                                    statusMsg += ` (ошибка сохр.: ${result.save_error || 'неизвестно'})`;
+                                    console.warn(`Попытка сохранения для ${result.video_id} не удалась: ${result.save_error || 'неизвестная причина'}`)
+                                } else if (commentTextWasPresent && saveWasRequested) {
+                                    
+                                    statusMsg += ' (ошибка сохр.?)';
+                                } else if (commentTextWasPresent && !saveWasRequested) {
+                                    
+                                    statusMsg += ' (не сохранено)';
+                                }
+                                updatePostStatus(result.video_id, statusMsg, 'posted');
+                                postedCount++;
+                            } else {
+                                updatePostStatus(result.video_id, `Ошибка: ${result.error || 'Неизвестно'}`, 'post-error');
+                                errorCount++;
+                            }
+                        });
+                        overallStatusDiv.textContent = `Публикация: ${postedCount} успешно (${savedCount} сохранены), ${errorCount} ошибок.`;
+                        if (currentBatchIndex + 1 < totalBatches) {
+                            nextBatchBtn.style.display = 'inline-flex';
+                        } else {
+                            overallStatusDiv.textContent += ' Все порции обработаны!';
+                        }
+                    } else {
+                        const errorDetail = data.error || `Статус ${response.status}`;
+                        overallStatusDiv.textContent = `Ошибка сервера при публикации: ${errorDetail}`;
+                        commentsToProcess.forEach(c => updatePostStatus(c.video_id, `Ошибка сервера`, 'post-error'));
+                    }
+
+                } catch (error) {
+                    console.error("Сетевая ошибка при вызове /api/auto_post_comments:", error);
+                    const errorMsg = `Сетевая ошибка: ${error.message}`;
+                    overallStatusDiv.textContent = `Сетевая ошибка: ${errorMsg}`;
+                    commentsToProcess.forEach(c => updatePostStatus(c.video_id, `Ошибка сети`, 'post-error'));
+                } finally {
+                    isPosting = false;
+                    postCommentsBtn.innerHTML = '<i class="fas fa-check-double"></i> Отправлено (попытка)';
+                    postCommentsBtn.disabled = true;
+                }
+            }
+    
+            postCommentsBtn.addEventListener('click', postBatchComments);
+            nextBatchBtn.addEventListener('click', () => {
+                nextBatchBtn.disabled = true;
+                nextBatchBtn.innerHTML = '<span class="spinner"></span> Загрузка...'
+                window.location.href = "{{ url_for('auto_process') }}";
+            });
+    
+            document.querySelectorAll('#processing-area > .video-block').forEach(block => {
+                processingQueue.push({ videoId: block.dataset.videoId, parentVideoId: null, depth: 0 });
+            });
+    
+             if (processingQueue.length > 0) {
+                processNextInQueue();
+            } else {
+                 overallStatusDiv.textContent = 'Нет видео для обработки в этой порции.';
+                 overallStatusDiv.style.display = 'block';
+                  if (currentBatchIndex + 1 < totalBatches) {
+                     nextBatchBtn.style.display = 'inline-flex';
+                 } else {
+                     overallStatusDiv.textContent += ' Все видео обработаны!';
+                 }
+             }
+    
+        });
+    </script>
+</body>
+</html>

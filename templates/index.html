@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - YouTube Commenter</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #ff0000;
+            --primary-hover: #cc0000;
+            --secondary-color: #333;
+            --bg-color: #f8f8f8;
+            --card-bg: #ffffff;
+            --success: #28a745;
+            --info: #17a2b8;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', 'Segoe UI', sans-serif;
+            background-color: var(--bg-color);
+            color: #444;
+            line-height: 1.6;
+            padding: 25px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 40px;
+            margin-bottom: 30px;
+        }
+        
+        .youtube-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        
+        .youtube-logo {
+            color: var(--primary-color);
+            font-size: 32px;
+            margin-right: 15px;
+        }
+        
+        h1 {
+            color: var(--secondary-color);
+            font-size: 28px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h2 {
+            color: var(--secondary-color);
+            font-size: 24px;
+            margin-top: 40px;
+            margin-bottom: 15px;
+        }
+        
+        .flash-messages {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 25px;
+        }
+        
+        .flash-messages li {
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: var(--border-radius);
+            position: relative;
+            padding-left: 45px;
+        }
+        
+        .flash-messages li::before {
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        .flash-success {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: #155724;
+            border-left: 4px solid var(--success);
+        }
+        
+        .flash-success::before {
+            content: '\f00c';
+            color: var(--success);
+        }
+        
+        .flash-error {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: #721c24;
+            border-left: 4px solid var(--danger);
+        }
+        
+        .flash-error::before {
+            content: '\f00d';
+            color: var(--danger);
+        }
+        
+        .flash-warning {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: #856404;
+            border-left: 4px solid var(--warning);
+        }
+        
+        .flash-warning::before {
+            content: '\f071';
+            color: var(--warning);
+        }
+        
+        .flash-info {
+            background-color: rgba(23, 162, 184, 0.1);
+            color: #0c5460;
+            border-left: 4px solid var(--info);
+        }
+        
+        .flash-info::before {
+            content: '\f05a';
+            color: var(--info);
+        }
+        
+        form {
+            margin-top: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 500;
+            color: var(--secondary-color);
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-family: inherit;
+            font-size: 15px;
+            min-height: 100px;
+            resize: vertical;
+            transition: var(--transition);
+            margin-bottom: 20px;
+        }
+        
+        textarea:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(255,0,0,0.1);
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 14px 24px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            display: block;
+            width: 100%;
+            transition: var(--transition);
+        }
+        
+        button:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+        }
+        
+        hr {
+            margin: 40px 0;
+            border: none;
+            height: 1px;
+            background-color: #eee;
+        }
+        
+        ol {
+            padding-left: 30px;
+            margin: 20px 0;
+        }
+        
+        ol li {
+            margin-bottom: 10px;
+        }
+        
+        .bookmarklet-container {
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-top: 20px;
+        }
+        
+        #bookmarklet-code {
+            width: 100%;
+            background-color: #333;
+            color: #f8f8f8;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-top: 15px;
+            border: none;
+        }
+        
+        small {
+            display: block;
+            margin-top: 15px;
+            color: #777;
+        }
+        
+        .icon-badge {
+            display: inline-flex;
+            align-items: center;
+            background-color: rgba(255,0,0,0.1);
+            color: var(--primary-color);
+            padding: 5px 15px;
+            border-radius: 20px;
+            margin-right: 10px;
+            font-weight: 500;
+        }
+        
+        .icon-badge i {
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="youtube-header">
+            <div class="youtube-logo">
+                <i class="fab fa-youtube"></i>
+            </div>
+            <h1>YouTube Commenter</h1>
+        </div>
+
+        <!-- Блок для Flash-сообщений (если используешь) -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="flash-messages">
+                {% for category, message in messages %}
+                    <li class="flash-{{ category }}">{{ message }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+        <!-- ================================ -->
+        <!-- Форма 1: Ручная обработка       -->
+        <!-- ================================ -->
+        <form method="post" id="manual-process-form"> <!-- Добавлен ID для удобства -->
+            <label for="video_ids">
+                <i class="fas fa-hand-pointer"></i> Введите начальные Video ID (через запятую):
+            </label>
+            <textarea id="video_ids" name="video_ids" rows="4" required placeholder="Например: dQw4w9WgXcQ,jNQXAC9IVRw">Xo2LWWE0XhM,0Y-lCWV3dW8,NnjCv1DbvlA,VTHxqHPq2p8,v5V2GjCwUHc,3Es2TKP0-OQ,gRtcRdU4ElI,3jWOyIcKz98,WEVe5RKogm4,oOIztBXox60,Kxkk3RRQlB4,d55OpQJ8pDs,dabIqkwy0Vg,vvkP6pHgN-s,lh5qx9NLUNk,M84smx6uwHE,ouFjzVLnYEg,cGsZCAC43uY,KU-iP7A519g,5qF4lXczPCM,5pq72dfDHns,NhWmZxH3E9w,eubUQoFm5eE,iofLQvencQo,65P5Cbgyr2A,JeEa-MgxNbM,LXuWjrUCJKA,gM8AhOD8Scc,wpMcMJZ23uw,A0V4km88tFc,r5EoFSAkr7I,Ywywiqissfg,htE3T7E_GSU,LPdg9uLoBk4,DTqlSunIolI,jbKpNpZ3ULg,0LEc7es4_rE,QbM_OwvmD0I,JAmrLOzzGtQ,HOqbOqNYiyw,I34sdFlzfus,XpnELxKZbDQ,7MwiTfjMBt4,2LhiCP8AQWs,DxEIAyDGS90,8ftEMZpPrzM,0lwE</textarea>
+            <button type="submit">
+                <i class="fas fa-play"></i> Начать обработку (Ручной режим)
+            </button>
+        </form>
+
+        <hr style="margin-top: 30px;">
+
+        <!-- =================================== -->
+        <!-- Форма 2: Автоматическая обработка   -->
+        <!-- =================================== -->
+        <h2><i class="fas fa-robot"></i> Автоматическая обработка</h2>
+        <form method="post" action="{{ url_for('start_auto_process') }}" id="auto-process-form"> <!-- Добавлен ID -->
+             <label for="auto_video_ids">
+                <i class="fas fa-film"></i> Видео ID для автоматической обработки (через запятую):
+            </label>
+            <!-- Значение по умолчанию теперь берется из request.form или пустое -->
+            <textarea id="auto_video_ids" name="auto_video_ids" rows="4" required placeholder="Вставьте сюда ID для авто-режима">{{ request.form.get('auto_video_ids', '') }}</textarea>
+
+            <div style="margin-top: 15px; margin-bottom: 15px; display: flex; align-items: center; gap: 25px; flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <label for="batch_size" style="margin-bottom: 0;">
+                        <i class="fas fa-box"></i> Размер порции:
+                    </label>
+                    <input type="number" id="batch_size" name="batch_size" value="{{ request.form.get('batch_size', 5) }}" min="1" max="50" required style="padding: 8px; border: 1px solid #ddd; border-radius: var(--border-radius); width: 70px;">
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                     <label for="max_related_depth" style="margin-bottom: 0;">
+                        <i class="fas fa-layer-group"></i> Глубина связанных:
+                    </label>
+                    <input type="number" id="max_related_depth" name="max_related_depth" value="{{ request.form.get('max_related_depth', 1) }}" min="0" max="10" required style="padding: 8px; border: 1px solid #ddd; border-radius: var(--border-radius); width: 70px;">
+                    <small style="margin-top: 0; color: #777;">(0 = без связанных)</small>
+                </div>
+            </div>
+
+            <button type="submit" style="background-color: var(--info); margin-top: 15px;">
+                <i class="fas fa-cogs"></i> Начать автоматическую обработку
+            </button>
+        </form>
+
+        <hr style="margin-top: 30px;">
+
+        <!-- ================================ -->
+        <!-- Секция с Bookmarklet           -->
+        <!-- ================================ -->
+        <h2><i class="fas fa-bookmark"></i> Bookmarklet для сбора ID с главной YouTube</h2>
+        <p>Чтобы быстро собрать ID видео с главной страницы YouTube:</p>
+        <ol>
+            <li>Создайте новую закладку в вашем браузере.</li>
+            <li>В поле "Адрес" или "URL" закладки вставьте <strong>весь</strong> код из поля ниже (начиная с `javascript:`).</li>
+            <li>Назовите закладку, например, "Собрать ID YouTube".</li>
+            <li>Перейдите на главную страницу <span class="icon-badge"><i class="fab fa-youtube"></i> youtube.com</span></li>
+            <li>Нажмите на созданную закладку.</li>
+            <li>Скопируйте ID из появившегося окна и вставьте в поле выше.</li>
+        </ol>
+        <div class="bookmarklet-container">
+            <textarea id="bookmarklet-code" rows="6" readonly>javascript:(function(){let videoIds=new Set();document.querySelectorAll('a#thumbnail[href^="/watch?v="]').forEach(a=>{try{let url=new URL(a.href,window.location.origin);let videoId=url.searchParams.get('v');if(videoId&&/^[a-zA-Z0-9_-]{11}$/.test(videoId)){videoIds.add(videoId)}}catch(e){console.error("Error parsing URL:",a.href,e)}});let idString=Array.from(videoIds).join(',');if(idString){prompt(`Найденные Video ID (${videoIds.size} шт.):\nСкопируйте эту строку:`,idString)}else{alert('Не найдено ссылок на видео (a#thumbnail) на этой странице. Возможно, структура YouTube изменилась.')}})();</textarea>
+            <small><strong><i class="fas fa-exclamation-triangle"></i> Внимание:</strong> Этот bookmarklet зависит от текущей структуры HTML-кода YouTube и может перестать работать, если Google ее изменит.</small>
+        </div>
+
+    </div> <!-- Конец .container -->
+
+    <!-- ================================ -->
+    <!-- JavaScript для фильтрации ID    -->
+    <!-- ================================ -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- Загрузка использованных ID ---
+            // Используем | safe вместо | raw
+            const usedIdsJson = '{{ used_ids_json | default("[]") | safe }}'; // Получаем JSON из Flask, по умолчанию пустой массив
+            let usedIdsSet = new Set();
+            try {
+                const parsedIds = JSON.parse(usedIdsJson);
+                if (Array.isArray(parsedIds)) {
+                    usedIdsSet = new Set(parsedIds);
+                    console.log(`[Filter] Загружено ${usedIdsSet.size} использованных ID для фильтрации.`);
+                } else {
+                    console.warn("[Filter] Данные used_ids_json не являются массивом.");
+                }
+            } catch (e) {
+                console.error("[Filter] Ошибка парсинга used_ids_json:", e);
+                // Продолжаем без фильтрации, если JSON некорректен
+            }
+
+            // --- Функция фильтрации для одной формы ---
+            function filterTextareaOnSubmit(formElement, textareaElement, usedIds) {
+                if (!formElement || !textareaElement) {
+                    console.warn(`[Filter] Не найдены элементы формы или textarea для ${formElement?.id || 'неизвестной формы'}`);
+                    return; // Выход, если элементы не найдены
+                }
+
+                formElement.addEventListener('submit', function(event) {
+                    const formId = formElement.id || 'форма без ID';
+                    const textareaId = textareaElement.id;
+                    console.log(`[Filter] Перехват отправки формы: ${formId}`);
+
+                    if (usedIds.size === 0) {
+                        console.log(`[Filter] (${formId}) Нет загруженных использованных ID, фильтрация не выполняется.`);
+                        return; // Просто отправляем форму как есть
+                    }
+
+                    const currentIdsString = textareaElement.value.trim();
+                    if (!currentIdsString) {
+                        console.log(`[Filter] (${formId}) Поле ${textareaId} пустое, фильтрация не нужна.`);
+                        return; // Ничего фильтровать
+                    }
+
+                    // Разбиваем строку на ID, убираем пустые строки и пробелы
+                    const currentIdsArray = currentIdsString.split(/[,\s\n]+/) // Разделяем по запятой, пробелам, переносам строк
+                                                .map(id => id.trim())
+                                                .filter(id => id && id.length > 5); // Убираем пустые и слишком короткие элементы
+
+                    // Фильтруем массив: оставляем только те ID, которых НЕТ в usedIdsSet
+                    const filteredIdsArray = currentIdsArray.filter(id => !usedIds.has(id));
+
+                    const originalCount = currentIdsArray.length;
+                    const filteredCount = filteredIdsArray.length;
+                    const removedCount = originalCount - filteredCount;
+
+                    if (removedCount > 0) {
+                        const newIdsString = filteredIdsArray.join(',');
+                        console.log(`[Filter] (${formId}) Фильтрация: Исходно ${originalCount} валидных ID, удалено ${removedCount}, осталось ${filteredCount}. Новое значение будет: ${newIdsString.substring(0,100)}...`);
+                        // Обновляем значение в textarea отфильтрованным списком
+                        textareaElement.value = newIdsString;
+                    } else {
+                        console.log(`[Filter] (${formId}) Фильтрация: Ни один ID не был удален (все новые или поле было пустым).`);
+                    }
+
+                    // Форма продолжит отправляться с (возможно) обновленным значением в textarea
+                    console.log(`[Filter] (${formId}) Продолжение отправки формы...`);
+                });
+            }
+
+            // --- Применяем фильтрацию к обеим формам ---
+            const manualForm = document.getElementById('manual-process-form');
+            const manualTextarea = document.getElementById('video_ids');
+            filterTextareaOnSubmit(manualForm, manualTextarea, usedIdsSet);
+
+            const autoForm = document.getElementById('auto-process-form');
+            const autoTextarea = document.getElementById('auto_video_ids');
+            filterTextareaOnSubmit(autoForm, autoTextarea, usedIdsSet);
+        });
+    </script>
+
+</body>
+</html>
