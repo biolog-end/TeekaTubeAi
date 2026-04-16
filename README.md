@@ -1,70 +1,72 @@
 # YouTube AI Commenter & Dataset Generator 
 
-Это персональный AI-ассистент для YouTube. Проект, который помогает создавать комментарии в уникальном стиле, развивать цифровую личность и автоматизировать рутину.
+This is a personal AI assistant for YouTube. A project that helps you create comments in a unique style, develop a digital persona, and automate the routine.
 
-Как это работает:
-1.  **Выбираем видео** -> **Генерируем коммент** с помощью AI (Google Gemini).
-2.  **Проверяем, правим** -> **Публикуем**.
-3.  Каждый опубликованный коммент **пополняет датасет**.
-4.  На этом датасете **дообучается AI**, чтобы в следующий раз лучше попадать в ваш стиль!
+How it works:
+1.  **Select a video** -> **Generate a comment** using AI (Google Gemini).
+2.  **Review, edit** -> **Publish**.
+3.  Each published comment **updates the dataset**.
+4.  The AI is **fine-tuned** on this dataset to match your style better next time!
 
-Получается такой вечный двигатель контента и самообучения AI!
+It results in a kind of eternal engine of content and AI self-learning!
 
-## Что умеет эта штука?
+## What can this thing do?
 
-*   **Удобный веб-интерфейс на Flask**: Все управление в браузере! Ноу консоль
-*   **Два режима**:
-    *   **Ручной**: Полный контроль, обрабатываем видео по одному.
-    *   **Автоматический**: Закинул пачку ID, используя предоставленный скрипт, настроил порции — и наблюдаешь за процессом.
-*   **Генерация комментариев через Google Gemini**: Использует как базовые, так и ваши собственные, дообученные (fine-tuned) модели.
-*   **Сам собирает датасет**: Каждый ваш комментарий делает AI умнее.
-*   **Генератор "человеческих" опечаток**: Чтобы комментарии не выглядели слишком идеально, добавляет реалестичные опечатки буд-то промах по клавише на соседнюю, пропуск буквы, или нечаянное перепутывание их местами!.
-*   **Ищет связанные видео**: Чтобы можно было сразу несколько видео на одну тему прокомментировать (с одновлением апи ютуба эта функция хоть и есть, но работает хуже, и требует много баллов апи)
+*   **Convenient Flask Web Interface**: Full control right in your browser! No console needed.
+*   **Two Modes**:
+    *   **Manual**: Full control, processing videos one by one.
+    *   **Automatic**: Drop in a bunch of IDs using the provided script, set the batch sizes — and watch the process.
+*   **Comment Generation via Google Gemini**: Uses both base models and your own fine-tuned models.
+*   **Automatic Dataset Collection**: Every comment you make makes the AI smarter.
+*   **"Human-like" Typo Generator**: To prevent comments from looking too perfect, it adds realistic typos — as if you missed a key, skipped a letter, or accidentally swapped them!
+*   **Related Video Search**: To comment on several videos on the same topic at once (note: while this function exists, it works less effectively with recent YouTube API updates and consumes many API points).
 
-## Как запустить?
+## How to run?
 
-#### 1. Клонируй репозиторий
+#### 1. Clone the repository
 ```bash
 git clone https://github.com/your-username/your-repo-name.git
 cd your-repo-name
 ```
 
-#### 2. Установи зависимости
+#### 2. Install dependencies
 ```bash
-pip install -r requirements.txt```
+pip install -r requirements.txt
+```
 
-#### 3. Настрой API
-Нужны 2 ключа от Google. Это самая нудная и тяжкая часть с коротой я не могу помочь, но без нее никак.
+#### 3. Configure the API
+You need 2 keys from Google. This is the most tedious and difficult part that I can't help with, but it's essential.
 
 *   **YouTube API (OAuth):**
-    1.  Идешь в [Google Cloud Console](https://console.cloud.google.com/).
-    2.  Включаешь **YouTube Data API v3**.
-    3.  Создаешь **"OAuth client ID"** для **"Desktop app"**.
-    4.  Скачиваешь JSON-файл и переименовываешь его в `client_secret.json`.
+    1.  Go to the [Google Cloud Console](https://console.cloud.google.com/).
+    2.  Enable the **YouTube Data API v3**.
+    3.  Create an **"OAuth client ID"** for a **"Desktop app"**.
+    4.  Download the JSON file and rename it to `client_secret.json`.
 
 *   **Gemini API (API Key):**
-    1.  Идешь в [Google AI Studio](https://aistudio.google.com/app/apikey) и получаешь ключ.
-    2.  Создаешь в папке проекта файл `.env`.
-    3.  Пишешь внутри него одну строчку:
-        ```        GOOGLE_API_KEY="СЮДА_ВСТАВИТЬ_КЛЮЧ"
+    1.  Go to [Google AI Studio](https://aistudio.google.com/app/apikey) and get your key.
+    2.  Create a `.env` file in the project folder.
+    3.  Write one line inside it:
+        ```env
+        GOOGLE_API_KEY="INSERT_YOUR_KEY_HERE"
         ```
 
-#### 4. Запускай!
+#### 4. Launch!
 ```bash
 python main.py
 ```
-При первом запуске откроется браузер для входа в ваш Google-аккаунт. После этого все будет работать автоматически.
+On the first run, a browser window will open to log into your Google account. After that, everything will work automatically.
 
-## Как пользоваться?
+## How to use?
 
-Запускаешь `python main.py` и идешь в браузер на `http://127.0.0.1:5000`.
+Run `python main.py` and go to your browser at `http://127.0.0.1:5000`.
 
-*   **Хочешь по одному?** Вставляй ID в первое поле и жми "Начать обработку".
-*   **Хочешь автоматом?** Вставляй ID во второе поле, выбирай размер "порции" и жми "Начать автоматическую обработку" (но только после того как сделал датасет своими ответами в прогонке по одному).
+*   **Want to do it one by one?** Paste the ID into the first field and click "Start Processing".
+*   **Want it automatic?** Paste the IDs into the second field, choose the "batch" size, and click "Start Automatic Processing" (but only after you've built a dataset with your manual responses).
 
-### Скрипты для работы с AI
-В комплекте есть несколько полезных скриптов:
-*   `fine_tune_model.py` — чтобы дообучить свою модель на собранных данных.
-*   `test.py` — чтобы посмотреть ка ктам прогресс.
-*   `evaluate_model.py` — чтобы проверить, насколько хорошо модель научилась.
-*   `delete_model.py` — чтобы удалить модель, если что-то пошло не так.
+### AI Management Scripts
+The package includes several useful scripts:
+*   `fine_tune_model.py` - to fine-tune your model on the collected data.
+*   `test.py` — to check the current progress.
+*   `evaluate_model.py` - to verify how well the model has learned.
+*   `delete_model.py` - to delete a model if something went wrong.
